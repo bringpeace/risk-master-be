@@ -17,6 +17,7 @@ namespace Risk
             builder.Services.AddSwaggerGen();
             //builder.Services.AddContext<DapperContext>();
             builder.Services.AddTransient<IClientTransactionRepository, ClientTransactionRepository>();
+            builder.Services.AddTransient<IPredictionRepository,PredictionRepository>();
             builder.Services.AddSingleton<DapperContext>();
 
 
