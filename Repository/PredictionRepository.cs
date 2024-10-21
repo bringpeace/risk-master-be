@@ -43,9 +43,9 @@ namespace Risk.Repository
                     transaction.RiskProfile = DetermineRiskProfile(transaction);
                 }
 
-                SaveToCsv(transactions, "D:\\Project\\risk-analysis-master\\Risk\\Data\\transactions_with_risk_profile_model.csv");
+                SaveToCsv(transactions, "D:\\Project\\Risk\\Data\\transactions_with_risk_profile_model.csv");
 
-                string dataPath = "D:\\Project\\risk-analysis-master\\Risk\\Data\\transactions_with_risk_profile_model.csv"; // Convert Excel to CSV or use a library to read Excel directly
+                string dataPath = "D:\\Project\\Risk\\Data\\transactions_with_risk_profile_model.csv"; // Convert Excel to CSV or use a library to read Excel directly
                 IDataView dataView = mlContext.Data.LoadFromTextFile<TransactionData>(dataPath, separatorChar: ',', hasHeader: true);
 
 
@@ -91,10 +91,10 @@ namespace Risk.Repository
               //  Console.WriteLine($"Log-loss: {metrics.LogLoss}");
 
                 // Save the model
-                mlContext.Model.Save(model, dataView.Schema, "D:\\Project\\risk-analysis-master\\Risk\\Data\\model.zip");
+                mlContext.Model.Save(model, dataView.Schema, "D:\\Project\\Risk\\Data\\trainingmodel.zip");
 
                 // Load the model for prediction
-                var loadedModel = mlContext.Model.Load("D:\\Project\\risk-analysis-master\\Risk\\Data\\model.zip", out var modelInputSchema);
+                var loadedModel = mlContext.Model.Load("D:\\Project\\Risk\\Data\\trainingmodel.zip", out var modelInputSchema);
 
                 // Create prediction engine
                 var predEngine = mlContext.Model.CreatePredictionEngine<TransactionData, TransactionPrediction>(loadedModel);
@@ -144,16 +144,16 @@ namespace Risk.Repository
                     transaction.RiskProfile = DetermineRiskProfile(transaction);
                 }
 
-                SaveToCsv(transactions, "D:\\Project\\risk-analysis-master\\Risk\\Data\\transactions_with_risk_profile_predict.csv");
+                SaveToCsv(transactions, "D:\\Project\\Risk\\Data\\transactions_with_risk_profile_predict.csv");
 
 
             }
             // Load the new client data
-            string newClientDataPath = "D:\\Project\\risk-analysis-master\\Risk\\Data\\transactions_with_risk_profile_predict.csv";
+            string newClientDataPath = "D:\\Project\\Risk\\Data\\transactions_with_risk_profile_predict.csv";
             IDataView newClientDataView = mlContext.Data.LoadFromTextFile<TransactionData>(newClientDataPath, separatorChar: ',', hasHeader: true);
 
             // Load the trained model
-            var loadedModel = mlContext.Model.Load("D:\\Project\\risk-analysis-master\\Risk\\Data\\model.zip", out var modelInputSchema);
+            var loadedModel = mlContext.Model.Load("D:\\Project\\Risk\\Data\\trainingmodel.zip", out var modelInputSchema);
 
             var predEngine = mlContext.Model.CreatePredictionEngine<TransactionData, TransactionPrediction>(loadedModel);
 
@@ -181,23 +181,23 @@ namespace Risk.Repository
 
         static string CalculateOverallRisk(List<string> riskProfiles)
         {
-            int highRiskCount = riskProfiles.Count(r => r == "High Risk");
-            int moderateRiskCount = riskProfiles.Count(r => r == "Medium Risk");
-            int lowRiskCount = riskProfiles.Count(r => r == "Low Risk");
+            int highRiskCount = riskProfiles.Count(r => r == "Aggressive");
+            int moderateRiskCount = riskProfiles.Count(r => r == "Balanced");
+            int lowRiskCount = riskProfiles.Count(r => r == "Conservative");
 
             int totalTransactions = riskProfiles.Count;
 
             if (highRiskCount / (float)totalTransactions > 0.5)
             {
-                return "High Risk";
+                return "Aggressive";
             }
             else if (lowRiskCount / (float)totalTransactions > 0.5)
             {
-                return "Low Risk";
+                return "Conservative";
             }
             else
             {
-                return "Medium Risk";
+                return "Balanced";
             }
         }
 
@@ -208,30 +208,30 @@ namespace Risk.Repository
             {
                 if (transaction.Xirr > transaction.Bmxirr && transaction.NewsSentiment == "Negative")
                 {
-                    return "High Risk";
+                    return "Aggressive";
                 }
                 else if (transaction.Xirr > transaction.Bmxirr && transaction.NewsSentiment == "Positive")
                 {
-                    return "Medium Risk";
+                    return "Balanced";
                 }
                 else if (transaction.Xirr <= transaction.Bmxirr)
                 {
-                    return "Medium Risk";
+                    return "Balanced";
                 }
             }
             else if (transaction.AssetName == "Debt")
             {
                 if (transaction.Xirr < transaction.Bmxirr && transaction.NewsSentiment == "Positive")
                 {
-                    return "Low Risk";
+                    return "Conservative";
                 }
                 else if (transaction.Xirr < transaction.Bmxirr && transaction.NewsSentiment == "Negative")
                 {
-                    return "Medium Risk";
+                    return "Balanced";
                 }
                 else if (transaction.Xirr >= transaction.Bmxirr)
                 {
-                    return "Medium Risk";
+                    return "Balanced";
                 }
             }
 
@@ -239,19 +239,19 @@ namespace Risk.Repository
             // Additional logic based on product, category, total amount, and buy/sell action
             if (transaction.ProductName.Contains("Mutual Funds") && transaction.TotalAmount > 1000000)
             {
-                return "High Risk";
+                return "Aggressive";
             }
             else if (transaction.CategoryName.Contains("Small Cap") && transaction.BuySell == "B")
             {
-                return "High Risk";
+                return "Aggressive";
             }
             else if (transaction.CategoryName.Contains("Large Cap") && transaction.BuySell == "S")
             {
-                return "Low Risk";
+                return "Conservative";
             }
 
             // Default risk profile
-            return "Medium Risk";
+            return "Balanced";
         }
 
         public void SaveToCsv(IEnumerable<TransactionData> transactions, string filePath)
