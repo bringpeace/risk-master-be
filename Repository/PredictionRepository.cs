@@ -182,7 +182,7 @@ namespace Risk.Repository
         static string CalculateOverallRisk(List<string> riskProfiles)
         {
             int highRiskCount = riskProfiles.Count(r => r == "High Risk");
-            int moderateRiskCount = riskProfiles.Count(r => r == "Moderate Risk");
+            int moderateRiskCount = riskProfiles.Count(r => r == "Medium Risk");
             int lowRiskCount = riskProfiles.Count(r => r == "Low Risk");
 
             int totalTransactions = riskProfiles.Count;
@@ -197,7 +197,7 @@ namespace Risk.Repository
             }
             else
             {
-                return "Moderate Risk";
+                return "Medium Risk";
             }
         }
 
